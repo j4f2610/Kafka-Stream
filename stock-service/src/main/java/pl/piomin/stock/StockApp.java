@@ -7,6 +7,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
 import pl.piomin.base.domain.Order;
 import pl.piomin.stock.domain.Product;
 import pl.piomin.stock.repository.ProductRepository;
@@ -27,14 +28,14 @@ public class StockApp {
 
     @Autowired
     OrderManageService orderManageService;
-
+    @Autowired
+    private KafkaTemplate<Long, Order> template;
     @KafkaListener(id = "orders", topics = "orders", groupId = "stock")
     public void onEvent(Order o) {
         LOG.info("Received: {}" , o);
-        if (o.getStatus().equals("NEW"))
-            orderManageService.reserve(o);
-        else
-            orderManageService.confirm(o);
+        o.setStatus("REJECT");
+        template.send("stock-orders", o.getId(), o);
+        LOG.info("STOCK VERIFY: {}", o);
     }
 
     @Autowired

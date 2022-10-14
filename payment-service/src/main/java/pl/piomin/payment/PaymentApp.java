@@ -8,10 +8,12 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
 import pl.piomin.base.domain.Order;
 import pl.piomin.payment.domain.Customer;
 import pl.piomin.payment.repository.CustomerRepository;
 import pl.piomin.payment.service.OrderManageService;
+import pl.piomin.payment.service.PointService;
 
 import javax.annotation.PostConstruct;
 import java.util.Random;
@@ -29,13 +31,27 @@ public class PaymentApp {
     @Autowired
     OrderManageService orderManageService;
 
+    @Autowired
+    PointService pointService;
+    @Autowired
+    private KafkaTemplate<Long, Order> template;
+
     @KafkaListener(id = "orders", topics = "orders", groupId = "payment")
     public void onEvent(Order o) {
-        LOG.info("Received: {}" , o);
-        if (o.getStatus().equals("NEW"))
-            orderManageService.reserve(o);
-        else
-            orderManageService.confirm(o);
+        LOG.info("Received: {}", o);
+        switch (o.getStatus()) {
+            case "NEW" -> {
+                var pro = pointService.findById(o.getPointId());
+                if (pro != null && o.getPointSpend() < pro.getQuality()) {
+                    o.setStatus("ACCEPT");
+                } else {
+                    o.setStatus("REJECT");
+                }
+                template.send("payment-orders", o.getId(), o);
+                LOG.info("PAYMENT VERIFY: {}", o);
+            }
+        }
+
     }
 
     @Autowired

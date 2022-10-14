@@ -1,9 +1,17 @@
 package pl.piomin.base.domain;
 
+import lombok.Data;
+
+@Data
 public class Order {
     private Long id;
     private Long customerId;
     private Long productId;
+    private Long promotionId;
+
+
+    private Long pointId;
+    private Long pointSpend;
     private int productCount;
     private int price;
     private String status;
@@ -12,19 +20,50 @@ public class Order {
     public Order() {
     }
 
-    public Order(Long id, Long customerId, Long productId, String status) {
+    public Order(Long id, Long customerId, Long productId, Long promotionId, Long pointId, Long pointSpend, String status) {
         this.id = id;
         this.customerId = customerId;
         this.productId = productId;
         this.status = status;
+        this.promotionId = promotionId;
+        this.pointId = pointId;
+        this.pointSpend = pointSpend;
     }
 
-    public Order(Long id, Long customerId, Long productId, int productCount, int price) {
+    public Order(Long id, Long customerId, Long productId, Long promotionId, int productCount, int price) {
         this.id = id;
         this.customerId = customerId;
         this.productId = productId;
         this.productCount = productCount;
         this.price = price;
+        this.promotionId = promotionId;
+        this.pointId = pointId;
+        this.pointSpend = pointSpend;
+        this.productCount = productCount;
+    }
+
+    public Long getPointId() {
+        return pointId;
+    }
+
+    public void setPointId(Long pointId) {
+        this.pointId = pointId;
+    }
+
+    public Long getPointSpend() {
+        return pointSpend;
+    }
+
+    public void setPointSpend(Long pointSpend) {
+        this.pointSpend = pointSpend;
+    }
+
+    public Long getPromotionId() {
+        return promotionId;
+    }
+
+    public void setPromotionId(Long promotionId) {
+        this.promotionId = promotionId;
     }
 
     public Long getId() {
@@ -89,6 +128,7 @@ public class Order {
                 "id=" + id +
                 ", customerId=" + customerId +
                 ", productId=" + productId +
+                ", promotionId=" + promotionId +
                 ", productCount=" + productCount +
                 ", price=" + price +
                 ", status='" + status + '\'' +

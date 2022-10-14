@@ -12,24 +12,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.annotation.EnableKafkaStreams;
 import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.support.serializer.JsonSerde;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import pl.piomin.base.domain.Order;
-import pl.piomin.order.controller.OrderController;
-import pl.piomin.order.service.OrderGeneratorService;
 import pl.piomin.order.service.OrderManageService;
 
 import java.time.Duration;
-import java.util.Random;
 import java.util.concurrent.Executor;
-import java.util.concurrent.atomic.AtomicLong;
 
 @SpringBootApplication
 @EnableKafkaStreams
 @EnableAsync
+@EnableKafka
 public class OrderApp {
 
     private static final Logger LOG = LoggerFactory.getLogger(OrderApp.class);
@@ -62,23 +60,31 @@ public class OrderApp {
                 .build();
     }
 
+    @Bean
+    public NewTopic promotionTopic() {
+        return TopicBuilder.name(PROMOTION_ORDER)
+                .partitions(3)
+                .compact()
+                .build();
+    }
+
     @Autowired
     OrderManageService orderManageService;
+    public final static String PROMOTION_ORDER = "promotion-orders";
+    public final static String PAYMENT_ORDER = "payment-orders";
+    public final static String STOCK_ORDER = "stock-orders";
 
     @Bean
     public KStream<Long, Order> stream(StreamsBuilder builder) {
         JsonSerde<Order> orderSerde = new JsonSerde<>(Order.class);
-        KStream<Long, Order> stream = builder
-                .stream("payment-orders", Consumed.with(Serdes.Long(), orderSerde));
-
-        stream.join(
-                        builder.stream("stock-orders"),
-                        orderManageService::confirm,
-                        JoinWindows.of(Duration.ofSeconds(10)),
+        KStream<Long, Order> stream = builder.stream(PAYMENT_ORDER, Consumed.with(Serdes.Long(), orderSerde));
+        stream.join(builder.stream(STOCK_ORDER),
+                        orderManageService::result,
+                        JoinWindows.of(Duration.ofSeconds(50)),
                         StreamJoined.with(Serdes.Long(), orderSerde, orderSerde))
-                .peek((k, o) -> LOG.info("Output: {}", o))
-                .to("orders");
-
+                .peek((k, o) -> LOG.info("Output COMBINE: {}", o));
+//        builder.stream(PROMOTION_ORDER, Consumed.with(Serdes.Long(), orderSerde))
+//                .peek((k, o) -> LOG.info("Output PROMOTION_ORDER: {}", o));
         return stream;
     }
 
