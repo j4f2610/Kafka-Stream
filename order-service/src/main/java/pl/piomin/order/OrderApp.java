@@ -68,6 +68,30 @@ public class OrderApp {
                 .build();
     }
 
+    @Bean
+    public NewTopic myTopic() {
+        return TopicBuilder.name("my-kafka-stream-stream-inner-join-out")
+                .partitions(3)
+                .compact()
+                .build();
+    }
+
+    @Bean
+    public NewTopic myLeftTopic() {
+        return TopicBuilder.name("my-kafka-stream-stream-left-join-out")
+                .partitions(3)
+                .compact()
+                .build();
+    }
+
+    @Bean
+    public NewTopic myOuterTopic() {
+        return TopicBuilder.name("my-kafka-stream-stream-outer-join-out")
+                .partitions(3)
+                .compact()
+                .build();
+    }
+
     @Autowired
     OrderManageService orderManageService;
     public final static String PROMOTION_ORDER = "promotion-orders";
@@ -83,8 +107,14 @@ public class OrderApp {
                         JoinWindows.of(Duration.ofSeconds(50)),
                         StreamJoined.with(Serdes.Long(), orderSerde, orderSerde))
                 .peek((k, o) -> LOG.info("Output COMBINE: {}", o));
-//        builder.stream(PROMOTION_ORDER, Consumed.with(Serdes.Long(), orderSerde))
-//                .peek((k, o) -> LOG.info("Output PROMOTION_ORDER: {}", o));
+        return stream;
+    }
+
+    @Bean
+    public KStream<Long, Order> streamPromotion(StreamsBuilder builder) {
+        JsonSerde<Order> orderSerde = new JsonSerde<>(Order.class);
+        KStream<Long, Order> stream = builder.stream(PROMOTION_ORDER, Consumed.with(Serdes.Long(), orderSerde))
+                .peek((k, o) -> LOG.info("Output COMBINE: {}", o));
         return stream;
     }
 

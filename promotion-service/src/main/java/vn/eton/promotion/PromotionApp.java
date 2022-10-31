@@ -33,10 +33,10 @@ public class PromotionApp {
         LOG.info("Promotion Received: {}", o);
         switch (o.getStatus()) {
             case "COMPLETE" -> {
-                var pro = promotionService.findById(o.getPromotionId());
-                pro.setUsedCount(pro.getUsedCount() + 1);
-                promotionService.create(pro);
-                LOG.info("Promotion UPDATE: {}", pro);
+//                var pro = promotionService.findById(o.getPromotionId());
+//                pro.setUsedCount(pro.getUsedCount() + 1);
+//                promotionService.create(pro);
+//                LOG.info("Promotion UPDATE: {}", pro);
             }
         }
     }

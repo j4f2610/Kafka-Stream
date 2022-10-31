@@ -7,7 +7,7 @@ public class Order {
     private Long id;
     private Long customerId;
     private Long productId;
-    private Long promotionId;
+    private String promotionId;
 
 
     private Long pointId;
@@ -20,7 +20,7 @@ public class Order {
     public Order() {
     }
 
-    public Order(Long id, Long customerId, Long productId, Long promotionId, Long pointId, Long pointSpend, String status) {
+    public Order(Long id, Long customerId, Long productId, String promotionId, Long pointId, Long pointSpend, String status) {
         this.id = id;
         this.customerId = customerId;
         this.productId = productId;
@@ -30,7 +30,7 @@ public class Order {
         this.pointSpend = pointSpend;
     }
 
-    public Order(Long id, Long customerId, Long productId, Long promotionId, int productCount, int price) {
+    public Order(Long id, Long customerId, Long productId, String promotionId, int productCount, int price) {
         this.id = id;
         this.customerId = customerId;
         this.productId = productId;
@@ -58,11 +58,11 @@ public class Order {
         this.pointSpend = pointSpend;
     }
 
-    public Long getPromotionId() {
+    public String getPromotionId() {
         return promotionId;
     }
 
-    public void setPromotionId(Long promotionId) {
+    public void setPromotionId(String promotionId) {
         this.promotionId = promotionId;
     }
 
